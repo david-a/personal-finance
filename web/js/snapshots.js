@@ -31,15 +31,6 @@ export function monthlySnapshots(daily, dayInMonth) {
     else rows.push({ snapshot: snap, balance: bal });
   }
 
-  let firstOk = -1;
-  for (let i = 0; i < rows.length; i++) {
-    if (!Number.isNaN(rows[i].balance)) {
-      firstOk = i;
-      break;
-    }
-  }
-  if (firstOk < 0) return [];
-
   let lastOk = -1;
   for (let i = rows.length - 1; i >= 0; i--) {
     if (!Number.isNaN(rows[i].balance)) {
@@ -48,6 +39,5 @@ export function monthlySnapshots(daily, dayInMonth) {
     }
   }
   if (lastOk < 0) return [];
-  /** בלי שורות פתיחה/סיום בלי יתרה; רווחים באמצע (NaN) נשמרים */
-  return rows.slice(firstOk, lastOk + 1);
+  return rows.slice(0, lastOk + 1);
 }
