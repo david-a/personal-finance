@@ -4,6 +4,7 @@ Load Israeli bank export (Excel), build end-of-day balances, sample monthly snap
 
 from __future__ import annotations
 
+import re
 from calendar import monthrange
 from pathlib import Path
 from typing import Literal
@@ -15,9 +16,61 @@ BALANCE_COL = "יתרה בש''ח"
 DATE_COL = "תאריך"
 
 
+def _normalize_header_cell(s: object) -> str:
+    if s is None or (isinstance(s, float) and pd.isna(s)):
+        return ""
+    t = str(s).strip().replace("\ufeff", "")
+    return re.sub(r"\s+", " ", t)
+
+
+def _find_col_indices_from_row(row: list[object]) -> tuple[int, int]:
+    date_idx = -1
+    bal_idx = -1
+    for i, cell in enumerate(row):
+        h = _normalize_header_cell(cell)
+        if not h:
+            continue
+        if date_idx < 0 and h in ("תאריך", "תאריך הפעולה"):
+            date_idx = i
+        if bal_idx < 0 and "יתרה" in h:
+            bal_idx = i
+    if date_idx < 0:
+        for i, cell in enumerate(row):
+            h = _normalize_header_cell(cell)
+            if "תאריך" in h and "ערך" not in h:
+                date_idx = i
+                break
+    return date_idx, bal_idx
+
+
+def _find_header_row_index(raw: pd.DataFrame, max_scan: int = 45) -> tuple[int, int, int] | None:
+    limit = min(max_scan, len(raw))
+    for i in range(limit):
+        row = raw.iloc[i].tolist()
+        d, b = _find_col_indices_from_row(row)
+        if d >= 0 and b >= 0:
+            return i, d, b
+    return None
+
+
 def load_transactions(path: str | Path) -> pd.DataFrame:
     path = Path(path)
-    df = pd.read_excel(path, engine="openpyxl", header=4)
+    raw = pd.read_excel(path, engine="openpyxl", header=None)
+    found = _find_header_row_index(raw)
+    if found is None:
+        raise ValueError(
+            "לא נמצאו עמודות תאריך / יתרה בשורות הפתיחה של הגיליון. ודאו שזה ייצוא תנועות מהבנק."
+        )
+    header_idx, date_idx, bal_idx = found
+    df = pd.read_excel(path, engine="openpyxl", header=header_idx)
+    date_series = df.iloc[:, date_idx]
+    bal_series = df.iloc[:, bal_idx]
+    df = pd.DataFrame(
+        {
+            DATE_COL: pd.to_datetime(date_series, errors="coerce"),
+            BALANCE_COL: pd.to_numeric(bal_series, errors="coerce"),
+        }
+    )
     df["_row_order"] = range(len(df))
     df[DATE_COL] = pd.to_datetime(df[DATE_COL], errors="coerce")
     df[BALANCE_COL] = pd.to_numeric(df[BALANCE_COL], errors="coerce")

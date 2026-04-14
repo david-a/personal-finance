@@ -6,19 +6,49 @@ import { cmpDay, toBalance, toDate } from "./dateUtils.js";
 
 function normalizeHeader(s) {
   return String(s ?? "")
+    .replace(/^\uFEFF/, "")
     .trim()
     .replace(/\s+/g, " ");
 }
 
+/**
+ * מזהה עמודת תנועה (לא תאריך ערך).
+ */
 function findColIndices(headerRow) {
   let dateIdx = -1;
   let balIdx = -1;
+  if (!headerRow || !headerRow.length) return { dateIdx, balIdx };
+
   for (let i = 0; i < headerRow.length; i++) {
     const h = normalizeHeader(headerRow[i]);
-    if (h === "תאריך") dateIdx = i;
-    if (h.includes("יתרה")) balIdx = i;
+    if (!h) continue;
+    if (dateIdx < 0) {
+      if (h === "תאריך" || h === "תאריך הפעולה") dateIdx = i;
+    }
+    if (balIdx < 0 && h.includes("יתרה")) balIdx = i;
+  }
+  if (dateIdx < 0) {
+    for (let i = 0; i < headerRow.length; i++) {
+      const h = normalizeHeader(headerRow[i]);
+      if (h.includes("תאריך") && !h.includes("ערך")) {
+        dateIdx = i;
+        break;
+      }
+    }
   }
   return { dateIdx, balIdx };
+}
+
+/** סורק את השורות הראשונות ומחזיר אינדקס שורת כותרות (ייצוא בנק משתנה בין פרטי/עסקי). */
+function findHeaderRowIndex(rows, maxScan = 45) {
+  const limit = Math.min(maxScan, rows.length);
+  for (let r = 0; r < limit; r++) {
+    const row = rows[r];
+    if (!row) continue;
+    const { dateIdx, balIdx } = findColIndices(row);
+    if (dateIdx >= 0 && balIdx >= 0) return r;
+  }
+  return -1;
 }
 
 /**
@@ -34,16 +64,21 @@ export function parseBankXlsx(ab) {
   const wb = XLSX.read(ab, { type: "array", cellDates: true });
   const sheet = wb.Sheets[wb.SheetNames[0]];
   const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: null, raw: true });
-  if (!rows || rows.length < 6) return { error: "הקובץ קצר מדי או ריק." };
+  if (!rows || rows.length < 2) return { error: "הקובץ קצר מדי או ריק." };
 
-  const headerRow = rows[4];
-  const { dateIdx, balIdx } = findColIndices(headerRow);
-  if (dateIdx < 0 || balIdx < 0) {
-    return { error: "לא נמצאו עמודות תאריך / יתרה (שורת כותרות צפויה בשורה 5)." };
+  const headerIdx = findHeaderRowIndex(rows);
+  if (headerIdx < 0) {
+    return {
+      error:
+        "לא נמצאו עמודות «תאריך» ו«יתרה» בשורות הפתיחה של הגיליון. ודאו שזה ייצוא תנועות מהבנק (לא דוח אחר).",
+    };
   }
 
+  const headerRow = rows[headerIdx];
+  const { dateIdx, balIdx } = findColIndices(headerRow);
+
   const raw = [];
-  for (let r = 5; r < rows.length; r++) {
+  for (let r = headerIdx + 1; r < rows.length; r++) {
     const row = rows[r];
     if (!row) continue;
     const day = toDate(row[dateIdx]);
