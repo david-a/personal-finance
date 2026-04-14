@@ -1,0 +1,131 @@
+:root {
+  --bg: #0f1419;
+  --card: #1a2332;
+  --text: #e8eef5;
+  --muted: #8b9cb3;
+  --accent: #3d8bfd;
+  --err: #f47174;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+.wrap {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 1.25rem 1rem 2rem;
+}
+h1 {
+  font-size: 1.5rem;
+  font-weight: 650;
+  margin: 0 0 0.5rem;
+}
+.lead {
+  color: var(--muted);
+  margin: 0 0 1.25rem;
+  font-size: 0.95rem;
+}
+.panel {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 1rem 1.1rem;
+  margin-bottom: 1rem;
+}
+.panel h2 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+  margin: 0 0 0.75rem;
+  font-weight: 600;
+}
+label.file-btn {
+  display: inline-block;
+  cursor: pointer;
+  background: var(--accent);
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+label.file-btn input {
+  display: none;
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: center;
+}
+.metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+@media (max-width: 520px) {
+  .metrics {
+    grid-template-columns: 1fr;
+  }
+}
+.metric {
+  background: rgba(0, 0, 0, 0.2);
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+}
+.metric .k {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+.metric .v {
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+#error {
+  display: none;
+  color: var(--err);
+  margin: 0.75rem 0 0;
+  font-size: 0.95rem;
+}
+#chart {
+  width: 100%;
+  min-height: 400px;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+th,
+td {
+  text-align: right;
+  padding: 0.45rem 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+th {
+  color: var(--muted);
+  font-weight: 600;
+}
+input[type="number"] {
+  width: 4rem;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--bg);
+  color: var(--text);
+}
+fieldset {
+  border: none;
+  margin: 0;
+  padding: 0;
+}
+fieldset label {
+  margin-inline-end: 1rem;
+  cursor: pointer;
+}
