@@ -3,14 +3,22 @@
  */
 
 import { fmtDate } from "./dateUtils.js";
-import { parseBankXlsx } from "./parseXlsx.js";
+import { parseBankInput } from "./parseXlsx.js";
 import { monthlySnapshots } from "./snapshots.js";
 import { destroyChart, renderChart, renderTable } from "./views.js";
 
 const EMPTY_CHART_HTML =
-  '<p style="color:#8b9cb3;text-align:center;padding:2rem 1rem;margin:0">העלו קובץ Excel (.xlsx) להצגת הגרף.</p>';
+  '<p style="color:#8b9cb3;text-align:center;padding:2rem 1rem;margin:0">העלו קובץ Excel (.xlsx) או CSV (.csv) להצגת הגרף.</p>';
 
-let lastBuffer = null;
+/** @type {{ kind: 'xlsx', data: ArrayBuffer } | { kind: 'csv', data: string } | null} */
+let lastPayload = null;
+
+function isCsvFile(f) {
+  if (!f || !f.name) return false;
+  const n = f.name.toLowerCase();
+  const t = (f.type || "").toLowerCase();
+  return n.endsWith(".csv") || t === "text/csv" || t === "application/csv" || t === "text/plain";
+}
 
 function syncDayNumDisabled() {
   const last = document.querySelector('input[name="snap-mode"][value="last"]').checked;
@@ -26,7 +34,7 @@ function run() {
   errEl.textContent = "";
   errEl.style.display = "none";
 
-  if (!lastBuffer) {
+  if (!lastPayload) {
     destroyChart();
     chartEl.innerHTML = EMPTY_CHART_HTML;
     const minTx = document.getElementById("min-tx");
@@ -40,7 +48,7 @@ function run() {
 
   let parsed;
   try {
-    parsed = parseBankXlsx(lastBuffer);
+    parsed = parseBankInput(lastPayload);
   } catch (e) {
     errEl.textContent = "שגיאה בקריאת הקובץ: " + (e && e.message ? e.message : String(e));
     errEl.style.display = "block";
@@ -82,16 +90,32 @@ function wire() {
     file.addEventListener("change", () => {
       const f = file.files && file.files[0];
       if (!f) {
-        lastBuffer = null;
+        lastPayload = null;
         run();
         return;
       }
       const reader = new FileReader();
       reader.onload = () => {
-        lastBuffer = reader.result;
+        if (isCsvFile(f)) {
+          lastPayload = { kind: "csv", data: reader.result };
+        } else {
+          lastPayload = { kind: "xlsx", data: reader.result };
+        }
         run();
       };
-      reader.readAsArrayBuffer(f);
+      reader.onerror = () => {
+        lastPayload = null;
+        const errEl = document.getElementById("error");
+        if (errEl) {
+          errEl.textContent = "שגיאה בקריאת הקובץ מהדיסק.";
+          errEl.style.display = "block";
+        }
+      };
+      if (isCsvFile(f)) {
+        reader.readAsText(f, "UTF-8");
+      } else {
+        reader.readAsArrayBuffer(f);
+      }
     });
   }
 

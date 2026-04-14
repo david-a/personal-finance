@@ -1,5 +1,5 @@
 /**
- * קריאת ייצוא בנק מ-Excel (SheetJS דרך global XLSX).
+ * קריאת ייצוא בנק מ-Excel (SheetJS) או CSV (Papa Parse).
  */
 
 import { cmpDay, toBalance, toDate } from "./dateUtils.js";
@@ -52,19 +52,10 @@ function findHeaderRowIndex(rows, maxScan = 45) {
 }
 
 /**
- * @param {ArrayBuffer} ab
+ * @param {(string|number|null|undefined)[][]} rows
  * @returns {{ daily: { day: Date, balance: number }[], minDay: Date, maxDay: Date } | { error: string }}
  */
-export function parseBankXlsx(ab) {
-  const XLSX = globalThis.XLSX;
-  if (!XLSX || typeof XLSX.read !== "function") {
-    return { error: "ספריית XLSX לא נטענה." };
-  }
-
-  /** false → תאריכים כסריאל מספרי; נמנעים מ־Date של SheetJS שמזיז יום באזורי זמן */
-  const wb = XLSX.read(ab, { type: "array", cellDates: false });
-  const sheet = wb.Sheets[wb.SheetNames[0]];
-  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: null, raw: true });
+function buildDailyFromSheetRows(rows) {
   if (!rows || rows.length < 2) return { error: "הקובץ קצר מדי או ריק." };
 
   const headerIdx = findHeaderRowIndex(rows);
@@ -109,4 +100,57 @@ export function parseBankXlsx(ab) {
   const minDay = daily[0].day;
   const maxDay = daily[daily.length - 1].day;
   return { daily, minDay, maxDay };
+}
+
+/**
+ * @param {ArrayBuffer} ab
+ */
+export function parseBankXlsx(ab) {
+  const XLSX = globalThis.XLSX;
+  if (!XLSX || typeof XLSX.read !== "function") {
+    return { error: "ספריית XLSX לא נטענה." };
+  }
+
+  /** false → תאריכים כסריאל מספרי; נמנעים מ־Date של SheetJS שמזיז יום באזורי זמן */
+  const wb = XLSX.read(ab, { type: "array", cellDates: false });
+  const sheet = wb.Sheets[wb.SheetNames[0]];
+  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: null, raw: true });
+  return buildDailyFromSheetRows(rows);
+}
+
+/**
+ * @param {string} text
+ */
+function parseBankCsvText(text) {
+  const Papa = globalThis.Papa;
+  if (!Papa || typeof Papa.parse !== "function") {
+    return { error: "ספריית Papa Parse לא נטענה." };
+  }
+
+  const parsed = Papa.parse(text, {
+    delimiter: "",
+    skipEmptyLines: false,
+  });
+
+  const rows = (parsed.data || []).map((row) =>
+    (row || []).map((cell) => (cell == null || cell === "" ? "" : String(cell)))
+  );
+
+  return buildDailyFromSheetRows(rows);
+}
+
+/**
+ * @param {{ kind: 'xlsx', data: ArrayBuffer } | { kind: 'csv', data: string }}
+ */
+export function parseBankInput(payload) {
+  if (!payload || typeof payload !== "object") {
+    return { error: "אין קובץ." };
+  }
+  if (payload.kind === "csv") {
+    return parseBankCsvText(payload.data);
+  }
+  if (payload.kind === "xlsx") {
+    return parseBankXlsx(payload.data);
+  }
+  return { error: "סוג קובץ לא נתמך." };
 }

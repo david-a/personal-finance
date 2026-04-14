@@ -25,9 +25,30 @@ export function toDate(v) {
     return new Date(v.getUTCFullYear(), v.getUTCMonth(), v.getUTCDate());
   }
   const s = String(v).trim();
+  /** CSV לפעמים מייצא סריאל Excel כמחרוזת */
+  const maybeSerial = Number(s);
+  if (
+    s.length > 0 &&
+    Number.isFinite(maybeSerial) &&
+    /^-?\d+(\.\d+)?$/.test(s) &&
+    maybeSerial >= 30000 &&
+    maybeSerial <= 60000
+  ) {
+    return excelSerialToDate(maybeSerial);
+  }
   const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
   if (iso) {
     return new Date(+iso[1], +iso[2] - 1, +iso[3]);
+  }
+  /** 12/04/2026 */
+  const dmySlash = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+  if (dmySlash) {
+    const dd = parseInt(dmySlash[1], 10);
+    const mm = parseInt(dmySlash[2], 10);
+    const yy = parseInt(dmySlash[3], 10);
+    if (mm >= 1 && mm <= 12 && dd >= 1 && dd <= 31) {
+      return new Date(yy, mm - 1, dd);
+    }
   }
   /** פורמט בנקים ישראלי נפוץ: 12.04.2026 */
   const dmy = s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})/);

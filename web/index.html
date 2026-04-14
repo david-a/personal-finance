@@ -5,23 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>יתרה בחשבון — נקודות בזמן</title>
     <link rel="stylesheet" href="css/app.css" />
-    <!-- גלובלים לפני מודול הכניסה (SheetJS, ApexCharts) -->
+    <!-- גלובלים לפני מודול הכניסה (SheetJS, Papa Parse, ApexCharts) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.54.1"></script>
   </head>
   <body>
     <div class="wrap">
       <h1>יתרה בחשבון — נקודות בזמן</h1>
       <p class="lead">
-        העלו קובץ Excel מייצוא חשבון עו״ש של בנק הפועלים (שורת כותרות אחרי פרטי חשבון). כל העיבוד נעשה בדפדפן — הקובץ לא
-        נשלח לשרת. בחרו יום בחודש (1–31) או יום אחרון בחודש; הגרף מציג יתרה בנקודות צילום חודשיות.
+        העלו קובץ Excel מייצוא חשבון עו״ש של בנק הפועלים (שורת כותרות אחרי פרטי חשבון). ניתן גם CSV — אותו מבנה עמודות
+        (תאריך ויתרה). כל העיבוד נעשה בדפדפן — הקובץ לא נשלח לשרת. בחרו יום בחודש (1–31) או יום אחרון בחודש; הגרף מציג יתרה
+        בנקודות צילום חודשיות.
       </p>
 
       <div class="panel">
         <h2>קובץ</h2>
         <label class="file-btn">
-          בחירת קובץ .xlsx
-          <input id="file" type="file" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
+          בחירת קובץ .xlsx / .csv
+          <input
+            id="file"
+            type="file"
+            accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv"
+          />
         </label>
       </div>
 
@@ -29,8 +35,8 @@
         <h2>יום הצילום בכל חודש</h2>
         <div class="row">
           <fieldset>
-            <label><input type="radio" name="snap-mode" value="day" checked /> יום ספציפי (1–31)</label>
             <label><input type="radio" name="snap-mode" value="last" /> יום אחרון בחודש</label>
+            <label><input type="radio" name="snap-mode" value="day" checked /> יום ספציפי (1–31)</label>
           </fieldset>
           <label>
             יום:
