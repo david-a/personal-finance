@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>יתרה בחשבון — נקודות בזמן</title>
     <link rel="stylesheet" href="css/app.css" />
-    <!-- גלובלים לפני מודול הכניסה (SheetJS, Plotly) -->
+    <!-- גלובלים לפני מודול הכניסה (SheetJS, ApexCharts) -->
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-    <script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.54.1"></script>
   </head>
   <body>
     <div class="wrap">
@@ -15,11 +15,6 @@
       <p class="lead">
         העלו קובץ Excel מייצוא עסקי (שורת כותרות אחרי פרטי חשבון). כל העיבוד נעשה בדפדפן — הקובץ לא
         נשלח לשרת. בחרו יום בחודש (1–31) או יום אחרון בחודש; הגרף מציג יתרה בנקודות צילום חודשיות.
-      </p>
-      <p class="lead" style="margin-top: -0.5rem; font-size: 0.88rem">
-        להרצה מקומית: שרת קבצים סטטיים על תיקיית <code>web</code> (למשל
-        <code>npx serve .</code> מתוך <code>web</code>, או כל שרת סטטי אחר). פתיחת
-        <code>index.html</code> ישירות מהדיסק לא תטעין מודולי ES.
       </p>
 
       <div class="panel">

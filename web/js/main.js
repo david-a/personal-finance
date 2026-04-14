@@ -5,7 +5,7 @@
 import { fmtDate } from "./dateUtils.js";
 import { parseBankXlsx } from "./parseXlsx.js";
 import { monthlySnapshots } from "./snapshots.js";
-import { renderChart, renderTable } from "./views.js";
+import { destroyChart, renderChart, renderTable } from "./views.js";
 
 const EMPTY_CHART_HTML =
   '<p style="color:#8b9cb3;text-align:center;padding:2rem 1rem;margin:0">העלו קובץ Excel (.xlsx) להצגת הגרף.</p>';
@@ -27,6 +27,7 @@ function run() {
   errEl.style.display = "none";
 
   if (!lastBuffer) {
+    destroyChart();
     chartEl.innerHTML = EMPTY_CHART_HTML;
     const minTx = document.getElementById("min-tx");
     const maxTx = document.getElementById("max-tx");
@@ -65,9 +66,7 @@ function run() {
   if (snapRows.length === 0) {
     errEl.textContent = "אין נתונים להצגה.";
     errEl.style.display = "block";
-    if (globalThis.Plotly && typeof globalThis.Plotly.purge === "function") {
-      globalThis.Plotly.purge("chart");
-    }
+    destroyChart();
     const tbody = document.querySelector("#points-body");
     if (tbody) tbody.innerHTML = "";
     return;
