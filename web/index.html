@@ -14,7 +14,7 @@
     <div class="wrap">
       <h1>יתרה בחשבון — נקודות בזמן</h1>
       <p class="lead">
-        העלו קובץ Excel מייצוא חשבון עו״ש של בנק הפועלים (שורת כותרות אחרי פרטי חשבון). ניתן גם CSV — אותו מבנה עמודות
+        העלו קובץ Excel מייצוא חשבון (תומך גם בשורת כותרות אחרי פרטי חשבון). ניתן גם CSV — אותו מבנה עמודות
         (תאריך ויתרה). כל העיבוד נעשה בדפדפן — הקובץ לא נשלח לשרת. בחרו יום בחודש (1–31) או יום אחרון בחודש; הגרף מציג יתרה
         בנקודות צילום חודשיות.
       </p>
@@ -30,6 +30,29 @@
           />
         </label>
       </div>
+
+      <details id="mapping-panel" class="panel" style="display: none">
+        <summary style="cursor: pointer; font-weight: 600">מיפוי עמודות (תאריך / יתרה)</summary>
+        <p class="lead" style="margin-top: 0.65rem">
+          גם אם זוהה אוטומטית, אפשר לבחור ידנית איזו עמודה היא תאריך ואיזו היא יתרה.
+        </p>
+        <div class="row">
+          <label>
+            שורת כותרות:
+            <select id="map-header-row"></select>
+          </label>
+          <label>
+            עמודת תאריך:
+            <select id="map-date-col"></select>
+          </label>
+          <label>
+            עמודת יתרה:
+            <select id="map-bal-col"></select>
+          </label>
+          <button id="map-apply" type="button" class="btn">החל מיפוי</button>
+        </div>
+        <div id="map-hint" class="hint" style="margin-top: 0.75rem"></div>
+      </details>
 
       <div class="panel">
         <h2>יום הצילום בכל חודש</h2>

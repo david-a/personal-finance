@@ -120,6 +120,30 @@ input[type="number"] {
   background: var(--bg);
   color: var(--text);
 }
+select {
+  padding: 0.35rem 0.55rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: var(--bg);
+  color: var(--text);
+  min-width: 12rem;
+}
+.btn {
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--text);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  padding: 0.42rem 0.8rem;
+  border-radius: 8px;
+  font-weight: 650;
+}
+.btn:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.hint {
+  color: var(--muted);
+  font-size: 0.92rem;
+}
 fieldset {
   border: none;
   margin: 0;
