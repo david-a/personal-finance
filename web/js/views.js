@@ -35,6 +35,30 @@ export function renderChart(snapRows) {
     y: Number.isNaN(r.balance) ? null : r.balance,
   }));
 
+  const vals = seriesData.map((d) => d.y).filter((v) => v != null && Number.isFinite(v));
+  const dataMin = vals.length ? Math.min(...vals) : 0;
+  const dataMax = vals.length ? Math.max(...vals) : 0;
+  const padY = Math.max(Math.abs(dataMax - dataMin) * 0.04, 1);
+
+  /** אזור שלילי מתחת לאפס — אדום שקוף; מעל — קו אדום ב־0 */
+  const yaxisAnnotations = [];
+  if (dataMin < 0) {
+    yaxisAnnotations.push({
+      y: 0,
+      y2: dataMin - padY,
+      fillColor: "rgba(248, 113, 113, 0.16)",
+      borderWidth: 0,
+      opacity: 1,
+    });
+  }
+  yaxisAnnotations.push({
+    y: 0,
+    borderColor: "#fb7185",
+    borderWidth: 2.5,
+    strokeDashArray: 0,
+    label: { show: false },
+  });
+
   const options = {
     series: [{ name: "יתרה", data: seriesData }],
     chart: {
@@ -114,6 +138,8 @@ export function renderChart(snapRows) {
       },
     },
     yaxis: {
+      min: () => Math.min(0, dataMin - padY),
+      max: () => Math.max(0, dataMax + padY),
       labels: {
         style: { colors: "#8b9cb3", fontSize: "11px" },
         formatter: (val) =>
@@ -138,6 +164,7 @@ export function renderChart(snapRows) {
       },
     },
     legend: { show: false },
+    annotations: { yaxis: yaxisAnnotations },
   };
 
   apexChart = new ApexCharts(el, options);
