@@ -180,7 +180,7 @@ function fmtDate(d) {
 
 function renderChart(snapRows) {
   const xs = snapRows.map((r) => fmtDate(r.snapshot));
-  const ys = snapRows.map((r) => r.balance);
+  const ys = snapRows.map((r) => (Number.isNaN(r.balance) ? null : r.balance));
   const trace = {
     x: xs,
     y: ys,
@@ -196,7 +196,7 @@ function renderChart(snapRows) {
       autosize: true,
       height: 520,
       margin: { l: 50, r: 40, t: 40, b: 50 },
-      xaxis: { title: "תאריך צילום (סוף יום)", tickformat: "%Y-%m-%d" },
+      xaxis: { title: "תאריך צילום (סוף יום)", type: "date", tickformat: "%Y-%m-%d" },
       yaxis: { title: "יתרה (₪)", tickformat: ",.0f" },
       hovermode: "x unified",
       font: { family: "system-ui, Arial, sans-serif" },
