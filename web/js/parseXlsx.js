@@ -61,7 +61,8 @@ export function parseBankXlsx(ab) {
     return { error: "ספריית XLSX לא נטענה." };
   }
 
-  const wb = XLSX.read(ab, { type: "array", cellDates: true });
+  /** false → תאריכים כסריאל מספרי; נמנעים מ־Date של SheetJS שמזיז יום באזורי זמן */
+  const wb = XLSX.read(ab, { type: "array", cellDates: false });
   const sheet = wb.Sheets[wb.SheetNames[0]];
   const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: null, raw: true });
   if (!rows || rows.length < 2) return { error: "הקובץ קצר מדי או ריק." };

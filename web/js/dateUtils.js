@@ -2,26 +2,42 @@
  * תאריכים והשוואות יום — ללא תלות ב-DOM או ב-XLSX.
  */
 
-/** Excel 1900 date serial → Date (מקומי) */
+/**
+ * Excel 1900 date serial → "יום קלנדרי" מקומי (חצות באותו יום — בלי הזזת אזור זמן).
+ * משתמשים ב־UTC של הסריאל כדי שלא ייפול 11 במקום 12.
+ */
 export function excelSerialToDate(serial) {
   const n = Number(serial);
   if (!Number.isFinite(n)) return null;
+  const whole = Math.floor(n);
   const epoch = Date.UTC(1899, 11, 30);
-  const ms = epoch + Math.round(n * 86400000);
+  const ms = epoch + whole * 86400000;
   const d = new Date(ms);
   return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
 }
 
 export function toDate(v) {
   if (v == null || v === "") return null;
-  if (v instanceof Date && !Number.isNaN(v.getTime())) {
-    return new Date(v.getFullYear(), v.getMonth(), v.getDate());
-  }
+  /** סריאל מספרי קודם — זה מה שמגיע מ־Excel כש־cellDates: false */
   if (typeof v === "number") return excelSerialToDate(v);
+  if (v instanceof Date && !Number.isNaN(v.getTime())) {
+    /** SheetJS לפעמים מחזיר Date ב־UTC חצות — ניקח יום לפי UTC ואז נבנה תאריך מקומי באותו יום קלנדרי */
+    return new Date(v.getUTCFullYear(), v.getUTCMonth(), v.getUTCDate());
+  }
   const s = String(v).trim();
-  const m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
-  if (m) {
-    return new Date(+m[1], +m[2] - 1, +m[3]);
+  const iso = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (iso) {
+    return new Date(+iso[1], +iso[2] - 1, +iso[3]);
+  }
+  /** פורמט בנקים ישראלי נפוץ: 12.04.2026 */
+  const dmy = s.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})/);
+  if (dmy) {
+    const dd = parseInt(dmy[1], 10);
+    const mm = parseInt(dmy[2], 10);
+    const yy = parseInt(dmy[3], 10);
+    if (mm >= 1 && mm <= 12 && dd >= 1 && dd <= 31) {
+      return new Date(yy, mm - 1, dd);
+    }
   }
   const parsed = Date.parse(s);
   if (!Number.isNaN(parsed)) {
