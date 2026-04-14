@@ -229,7 +229,8 @@ function run() {
   errEl.style.display = "none";
 
   if (!lastBuffer) {
-    chartEl.innerHTML = "";
+    chartEl.innerHTML =
+      '<p style="color:#8b9cb3;text-align:center;padding:2rem 1rem;margin:0">העלו קובץ Excel (.xlsx) להצגת הגרף.</p>';
     document.getElementById("min-tx").textContent = "—";
     document.getElementById("max-tx").textContent = "—";
     document.querySelector("#points-body").innerHTML = "";
