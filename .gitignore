@@ -2,3 +2,5 @@
 .env
 *.xlsx
 __pycache__/
+private/
+data/
